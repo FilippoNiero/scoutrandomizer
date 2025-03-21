@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema di Formazione Reparti Scout</title>
+    <style>
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .pinned {
+            border: 2px solid #e74c3c !important;
+            position: relative;
+        }
+
+        .pin-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .pin-action {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .unpin-action {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .input-section, .output-section, .info-section {
+            margin-bottom: 30px;
+        }
+        .file-upload {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .scout-group {
+            background-color: #e8f4f8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .squad {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .squad.male {
+            background-color: #d4e6f1;
+        }
+        .squad.female {
+            background-color: #f1d4e6;
+        }
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background-color: #f7f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .formation-team {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .team-header {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+        }
+        .team-content {
+            padding: 15px;
+        }
+        .squad-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .squad-item {
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .squad-item.male {
+            background-color: #d4e6f1;
+        }
+        .squad-item.female {
+            background-color: #f1d4e6;
+        }
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            background-color: #fadbd8;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #27ae60;
+            padding: 10px;
+            background-color: #d4efdf;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .rules {
+            background-color: #fffde7;
+            border-left: 4px solid #fbc02d;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        #fileContent {
+            width: 100%;
+            min-height: 200px;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            border-radius: 8px 8px 0 0;
+        }
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            color: #333;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .tabcontent {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sistema di Formazione Reparti Scout</h1>
+    
+    <div class="container">
+        <div class="rules">
+            <h3>Regole di Formazione:</h3>
+            <ul>
+                <li>Ogni squadriglia viene assegnata a uno staff di capi che <strong>NON</strong> sia il proprio</li>
+                <li>Ogni staff gestisce tra 4 e 5 squadriglie</li>
+                <li>Le squadriglie maschi e femmine devono essere bilanciate in ogni reparto</li>
+                <li>Il numero di componenti deve essere bilanciato tra i reparti</li>
+                <li>Ogni reparto deve contenere squadriglie tutte di gruppi diversi (no due squadriglie dello stesso gruppo)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tab">
+            <button class="tablinks active" onclick="openTab(event, 'FileUpload')">Carica File</button>
+            <button class="tablinks" onclick="openTab(event, 'ManualEntry')">Inserimento Manuale</button>
+        </div>
+        
+        <div id="FileUpload" class="tabcontent" style="display: block;">
+            <h2>Carica i dati delle squadriglie</h2>
+            <p>Carica un file di testo con i dati delle squadriglie nel seguente formato:</p>
+            <pre>
+&lt;NomeGruppo1&gt;
+&lt;NomeSQ&gt; &lt;M o F&gt; &lt;numeroComponenti&gt;
+&lt;NomeSQ2&gt; &lt;M o F&gt; &lt;numeroComponenti&gt;
+...
+
+&lt;NomeGruppo2&gt;
+...
+            </pre>
+            <div class="file-upload">
+                <input type="file" id="inputFile" accept=".txt">
+                <button onclick="processFile()">Carica File</button>
+            </div>
+            <div id="filePreview"></div>
+        </div>
+        
+        <div id="ManualEntry" class="tabcontent">
+            <h2>Inserisci i dati manualmente</h2>
+            <p>Inserisci i dati delle squadriglie nel formato specificato:</p>
+            <textarea id="fileContent" placeholder="Inserisci i dati qui..."></textarea>
+            <button onclick="processManualInput()">Elabora Dati</button>
+        </div>
+    </div>
+
+    <div id="errorContainer" style="display: none;" class="container error"></div>
+    
+    <div id="dataContainer" style="display: none;" class="container">
+        <h2>Dati caricati</h2>
+        <div id="dataPreview"></div>
+        <div class="stats" id="statsContainer"></div>
+        <button id="formTeamsBtn" onclick="formTeams()">Forma i Reparti</button>
+    </div>
+    
+    <div id="resultsContainer" style="display: none;" class="container">
+        <h2>Reparti di Formazione</h2>
+        <div class="stats" id="resultStatsContainer"></div>
+        <div class="button-group">
+            <button onclick="randomizeTeams()">Randomizza</button>
+            <button onclick="downloadResults()">Scarica Risultati</button>
+            <button onclick="resetApp()">Ricomincia</button>
+        </div>
+        <div id="teamsContainer"></div>
+    </div>
+
+    <script>
+        // Strutture dati globali
+let scoutGroups = [];
+let formationTeams = [];
+let pinnedTeams = new Set(); // ID dei team bloccati
+let pinnedSquads = new Map(); // Mappa squadriglia -> ID team
+
+// Funzione per aprire le schede
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+
+// Funzione per trovare il miglior team per una squadriglia
+function findBestTeam(squad, teams) {
+    const squadId = `${squad.group}-${squad.name}`;
+    
+    // Se la squadriglia è bloccata, ritorna il team assegnato
+    if (pinnedSquads.has(squadId)) {
+        const pinnedTeamIndex = pinnedSquads.get(squadId);
+        return formationTeams[pinnedTeamIndex];
+    }
+    
+    return teams
+        .filter(team => {
+            // Non assegnare a team bloccati se non è una squadriglia già del team
+            const teamIndex = formationTeams.indexOf(team);
+            if (pinnedTeams.has(teamIndex)) return false;
+
+            // Non assegnare al proprio staff
+            if (team.staff.leadingGroup === squad.group) return false;
+            
+            // Non più di 5 squadriglie per team
+            if (team.squads.length >= 5) return false;
+            
+            // Non duplicare gruppi
+            if (team.groups.has(squad.group)) return false;
+            
+            return true;
+        })
+        .sort((a, b) => {
+            // Priorità 1: Bilanciare maschi e femmine
+            const aGenderBalance = squad.gender === 'M' ? 
+                (a.maleSquads + 1) / (a.femaleSquads + 1) :
+                (a.femaleSquads + 1) / (a.maleSquads + 1);
+            
+            const bGenderBalance = squad.gender === 'M' ? 
+                (b.maleSquads + 1) / (b.femaleSquads + 1) :
+                (b.femaleSquads + 1) / (b.maleSquads + 1);
+            
+            // Priorità 2: Bilanciare il numero totale di membri
+            if (Math.abs(aGenderBalance - bGenderBalance) < 0.5) {
+                return a.totalMembers - b.totalMembers;
+            }
+            
+            return Math.abs(1 - aGenderBalance) - Math.abs(1 - bGenderBalance);
+        })[0];
+}
+
+// Funzione per randomizzare i team rispettando i pin
+function randomizeTeams() {
+    if (formationTeams.length === 0) {
+        showError("Nessun reparto da randomizzare");
+        return;
+    }
+    
+    // Raccogli tutte le squadriglie non bloccate
+    let unassignedSquads = [];
+    
+    // Rimuovi le squadriglie non bloccate dai team esistenti
+    formationTeams.forEach((team, teamIndex) => {
+        const newSquads = [];
+        
+        team.squads.forEach(squad => {
+            const squadId = `${squad.group}-${squad.name}`;
+            if (pinnedSquads.has(squadId) && pinnedSquads.get(squadId) === teamIndex) {
+                // Mantieni la squadriglia bloccata
+                newSquads.push(squad);
+            } else {
+                // Raccogli le squadriglie non bloccate
+                unassignedSquads.push(squad);
+            }
+        });
+        
+        // Aggiorna il team con solo le squadriglie bloccate
+        team.squads = newSquads;
+        team.maleSquads = newSquads.filter(s => s.gender === 'M').length;
+        team.femaleSquads = newSquads.filter(s => s.gender === 'F').length;
+        team.totalMembers = newSquads.reduce((sum, s) => sum + s.members, 0);
+        team.groups = new Set(newSquads.map(s => s.group));
+    });
+    
+    // Mescola casualmente le squadriglie non assegnate
+    shuffleArray(unassignedSquads);
+    
+    // Divide le squadriglie per genere per garantire un'assegnazione bilanciata
+    const maleSquads = unassignedSquads.filter(squad => squad.gender === 'M');
+    const femaleSquads = unassignedSquads.filter(squad => squad.gender === 'F');
+    
+    // Funzione per assegnare le squadriglie con tentativi multipli se necessario
+    function assignSquads(squads) {
+        let remainingSquads = [...squads];
+        
+        // Primo tentativo: rispetta tutte le regole
+        let newRemaining = [];
+        for (const squad of remainingSquads) {
+            const bestTeam = findBestTeam(squad, formationTeams);
+            if (bestTeam) {
+                bestTeam.squads.push(squad);
+                bestTeam.totalMembers += squad.members;
+                if (squad.gender === 'M') bestTeam.maleSquads++;
+                else bestTeam.femaleSquads++;
+                bestTeam.groups.add(squad.group);
+            } else {
+                newRemaining.push(squad);
+            }
+        }
+        
+        remainingSquads = newRemaining;
+        
+        // Secondo tentativo: ignora la regola dei gruppi duplicati
+        if (remainingSquads.length > 0) {
+            newRemaining = [];
+            for (const squad of remainingSquads) {
+                // Trova un team che non sia il proprio e non abbia più di 5 squadriglie
+                const possibleTeams = formationTeams
+                    .filter(team => {
+                        // Non assegnare al proprio staff
+                        if (team.staff.leadingGroup === squad.group) return false;
+                        
+                        // Non più di 5 squadriglie per team
+                        if (team.squads.length >= 5) return false;
+                        
+                        return true;
+                    })
+                    .sort((a, b) => a.totalMembers - b.totalMembers);
+                
+                if (possibleTeams.length > 0) {
+                    const team = possibleTeams[0];
+                    team.squads.push(squad);
+                    team.totalMembers += squad.members;
+                    if (squad.gender === 'M') team.maleSquads++;
+                    else team.femaleSquads++;
+                    team.groups.add(squad.group);
+                } else {
+                    newRemaining.push(squad);
+                }
+            }
+            remainingSquads = newRemaining;
+        }
+        
+        // Ultimo tentativo: ignora anche la regola delle 5 squadriglie
+        if (remainingSquads.length > 0) {
+            for (const squad of remainingSquads) {
+                // Prendi il team col minor numero di membri che non sia il proprio
+                const possibleTeams = formationTeams
+                    .filter(team => team.staff.leadingGroup !== squad.group)
+                    .sort((a, b) => a.totalMembers - b.totalMembers);
+                
+                if (possibleTeams.length > 0) {
+                    const team = possibleTeams[0];
+                    team.squads.push(squad);
+                    team.totalMembers += squad.members;
+                    if (squad.gender === 'M') team.maleSquads++;
+                    else team.femaleSquads++;
+                    team.groups.add(squad.group);
+                }
+            }
+        }
+    }
+    
+    // Assegna le squadriglie alternando maschi e femmine
+    const maxLength = Math.max(maleSquads.length, femaleSquads.length);
+    let maleIndex = 0, femaleIndex = 0;
+    
+    const combinedSquads = [];
+    for (let i = 0; i < maxLength * 2; i++) {
+        if (i % 2 === 0 && maleIndex < maleSquads.length) {
+            combinedSquads.push(maleSquads[maleIndex++]);
+        } else if (femaleIndex < femaleSquads.length) {
+            combinedSquads.push(femaleSquads[femaleIndex++]);
+        }
+    }
+    
+    assignSquads(combinedSquads);
+    
+    // Visualizza i risultati aggiornati
+    displayResults();
+}
+
+// Funzione per mescolare un array
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Funzione per elaborare il file caricato
+function processFile() {
+    const fileInput = document.getElementById('inputFile');
+    if (fileInput.files.length === 0) {
+        showError("Seleziona un file da caricare");
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const content = e.target.result;
+        document.getElementById('filePreview').innerHTML = `
+            <div class="success">File caricato con successo</div>
+            <h3>Anteprima del file:</h3>
+            <pre>${content}</pre>
+        `;
+        parseInputData(content);
+    };
+    
+    reader.onerror = function() {
+        showError("Errore nella lettura del file");
+    };
+    
+    reader.readAsText(file);
+}
+
+// Funzione per elaborare l'input manuale
+function processManualInput() {
+    const content = document.getElementById('fileContent').value;
+    if (!content.trim()) {
+        showError("Inserisci i dati delle squadriglie");
+        return;
+    }
+    parseInputData(content);
+}
+
+// Funzione per analizzare i dati di input
+function parseInputData(content) {
+    resetData();
+    
+    const lines = content.split('\n');
+    let currentGroup = null;
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line === '') {
+            currentGroup = null;
+            continue;
+        }
+        
+        if (!currentGroup) {
+            // Nuova linea con nome gruppo
+            currentGroup = {
+                name: line,
+                squads: []
+            };
+            scoutGroups.push(currentGroup);
+        } else {
+            // Linea con dati squadriglia
+            const parts = line.split(' ');
+            if (parts.length >= 3) {
+                const squadName = parts[0];
+                const gender = parts[1].toUpperCase();
+                const members = parseInt(parts[2]);
+                
+                if ((gender === 'M' || gender === 'F') && !isNaN(members)) {
+                    currentGroup.squads.push({
+                        name: squadName,
+                        gender: gender,
+                        members: members
+                    });
+                } else {
+                    showError(`Formato non valido alla linea ${i+1}: ${line}`);
+                    return;
+                }
+            } else {
+                showError(`Formato non valido alla linea ${i+1}: ${line}`);
+                return;
+            }
+        }
+    }
+    
+    if (scoutGroups.length === 0) {
+        showError("Nessun dato valido trovato");
+        return;
+    }
+    
+    // Visualizza i dati caricati
+    displayLoadedData();
+}
+
+// Funzione per visualizzare i dati caricati
+function displayLoadedData() {
+    const dataPreview = document.getElementById('dataPreview');
+    const statsContainer = document.getElementById('statsContainer');
+    
+    let html = '<div class="scout-groups">';
+    
+    let totalSquads = 0;
+    let maleSquads = 0;
+    let femaleSquads = 0;
+    let totalMembers = 0;
+    
+    scoutGroups.forEach(group => {
+        html += `
+            <div class="scout-group">
+                <h3>${group.name} (${group.squads.length} squadriglie)</h3>
+                <div class="squads">
+        `;
+        
+        group.squads.forEach(squad => {
+            const genderClass = squad.gender === 'M' ? 'male' : 'female';
+            html += `
+                <div class="squad ${genderClass}">
+                    ${squad.name} (${squad.gender}) - ${squad.members} membri
+                </div>
+            `;
+            
+            totalSquads++;
+            if (squad.gender === 'M') maleSquads++;
+            else femaleSquads++;
+            totalMembers += squad.members;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    dataPreview.innerHTML = html;
+    
+    // Statistiche
+    statsContainer.innerHTML = `
+        <div class="stat-box">
+            <h3>Gruppi</h3>
+            <div class="stat-value">${scoutGroups.length}</div>
+        </div>
+        <div class="stat-box">
+            <h3>Squadriglie</h3>
+            <div class="stat-value">${totalSquads}</div>
+        </div>
+        <div class="stat-box">
+            <h3>Squadriglie M</h3>
+            <div class="stat-value">${maleSquads}</div>
+        </div>
+        <div class="stat-box">
+            <h3>Squadriglie F</h3>
+            <div class="stat-value">${femaleSquads}</div>
+        </div>
+        <div class="stat-box">
+            <h3>Membri Totali</h3>
+            <div class="stat-value">${totalMembers}</div>
+        </div>
+    `;
+    
+    // Mostra il container dei dati
+    document.getElementById('dataContainer').style.display = 'block';
+    document.getElementById('errorContainer').style.display = 'none';
+}
+
+// Funzione per formare i reparti
+function formTeams() {
+    if (scoutGroups.length === 0) {
+        showError("Nessun dato disponibile");
+        return;
+    }
+    
+    if (scoutGroups.length !== 17) {
+        showError(`Attenzione: ci sono ${scoutGroups.length} gruppi invece dei 17 previsti.`);
+        // Continuiamo comunque
+    }
+    
+    // Resetta i team precedenti
+    formationTeams = [];
+    pinnedTeams = new Set();
+    pinnedSquads = new Map();
+    
+    // Creiamo un array di staff (uno per gruppo)
+    const staffs = scoutGroups.map(group => ({
+        name: group.name,
+        leadingGroup: group.name
+    }));
+    
+    // Raccogliamo tutte le squadriglie in un singolo array
+    let allSquads = [];
+    scoutGroups.forEach(group => {
+        group.squads.forEach(squad => {
+            allSquads.push({
+                ...squad,
+                group: group.name
+            });
+        });
+    });
+    
+    // Dividiamo le squadriglie per genere
+    const maleSquads = allSquads.filter(squad => squad.gender === 'M');
+    const femaleSquads = allSquads.filter(squad => squad.gender === 'F');
+    
+    // Ordiniamo in base al numero di componenti (decrescente)
+    maleSquads.sort((a, b) => b.members - a.members);
+    femaleSquads.sort((a, b) => b.members - a.members);
+    
+    // Inizializziamo i team con gli staff
+    staffs.forEach(staff => {
+        formationTeams.push({
+            staff: staff,
+            squads: [],
+            totalMembers: 0,
+            maleSquads: 0,
+            femaleSquads: 0,
+            groups: new Set()
+        });
+    });
+    
+    // Prima passiamo le squadriglie più numerose, alternando M e F
+    let maleIndex = 0;
+    let femaleIndex = 0;
+    
+    while (maleIndex < maleSquads.length || femaleIndex < femaleSquads.length) {
+        // Una squadriglia maschile
+        if (maleIndex < maleSquads.length) {
+            const squad = maleSquads[maleIndex];
+            const bestTeam = findBestTeam(squad, formationTeams);
+            
+            if (bestTeam) {
+                bestTeam.squads.push(squad);
+                bestTeam.totalMembers += squad.members;
+                bestTeam.maleSquads++;
+                bestTeam.groups.add(squad.group);
+            }
+            
+            maleIndex++;
+        }
+        
+        // Una squadriglia femminile
+        if (femaleIndex < femaleSquads.length) {
+            const squad = femaleSquads[femaleIndex];
+            const bestTeam = findBestTeam(squad, formationTeams);
+            
+            if (bestTeam) {
+                bestTeam.squads.push(squad);
+                bestTeam.totalMembers += squad.members;
+                bestTeam.femaleSquads++;
+                bestTeam.groups.add(squad.group);
+            }
+            
+            femaleIndex++;
+        }
+    }
+    
+    // Rimuovi team vuoti
+    formationTeams = formationTeams.filter(team => team.squads.length > 0);
+    
+    // Assegna un nome ai team
+    formationTeams.forEach((team, index) => {
+        team.name = `Reparto ${index + 1} - Staff ${team.staff.name}`;
+    });
+    
+    // Visualizza i risultati
+    displayResults();
+}
+
+// Funzione per visualizzare i risultati
+function displayResults() {
+    const teamsContainer = document.getElementById('teamsContainer');
+    const resultStatsContainer = document.getElementById('resultStatsContainer');
+    
+    // Calcola statistiche
+    let minSquads = Number.MAX_SAFE_INTEGER;
+    let maxSquads = 0;
+    let minMembers = Number.MAX_SAFE_INTEGER;
+    let maxMembers = 0;
+    let totalAssignedSquads = 0;
+    
+    formationTeams.forEach(team => {
+        const squadCount = team.squads.length;
+        totalAssignedSquads += squadCount;
+        
+        minSquads = Math.min(minSquads, squadCount);
+        maxSquads = Math.max(maxSquads, squadCount);
+        
+        minMembers = Math.min(minMembers, team.totalMembers);
+        maxMembers = Math.max(maxMembers, team.totalMembers);
+    });
+    
+    // Mostra statistiche
+    resultStatsContainer.innerHTML = `
+        <div class="stat-box">
+            <h3>Reparti Formati</h3>
+            <div class="stat-value">${formationTeams.length}</div>
+        </div>
+        <div class="stat-box">
+            <h3>Squadriglie Assegnate</h3>
+            <div class="stat-value">${totalAssignedSquads}</div>
+        </div>
+        <div class="stat-box">
+            <h3>Squadriglie per Reparto</h3>
+            <div class="stat-value">${minSquads}-${maxSquads}</div>
+        </div>
+        <div class="stat-box">
+            <h3>Membri per Reparto</h3>
+            <div class="stat-value">${minMembers}-${maxMembers}</div>
+        </div>
+    `;
+    
+    // Visualizza i team
+    let teamsHtml = '';
+    
+    formationTeams.forEach((team, teamIndex) => {
+        const isPinned = pinnedTeams.has(teamIndex);
+        const pinnedClass = isPinned ? 'pinned' : '';
+        
+        teamsHtml += `
+            <div class="formation-team ${pinnedClass}" id="team-${teamIndex}">
+                <div class="team-header">
+                    <h3>${team.name}</h3>
+                    <button class="${isPinned ? 'unpin-action' : 'pin-action'}" 
+                            onclick="${isPinned ? 'unpinTeam(' : 'pinTeam('}${teamIndex})">
+                        ${isPinned ? 'Sblocca' : 'Blocca'} Reparto
+                    </button>
+                </div>
+                <div class="team-content">
+                    <p><strong>Squadriglie:</strong> ${team.squads.length} (${team.maleSquads} M, ${team.femaleSquads} F)</p>
+                    <p><strong>Membri totali:</strong> ${team.totalMembers}</p>
+                    
+                    <h4>Squadriglie assegnate:</h4>
+                    <div class="squad-list">
+        `;
+        
+        team.squads.forEach((squad, squadIndex) => {
+            const squadId = `${squad.group}-${squad.name}`;
+            const isSquadPinned = pinnedSquads.has(squadId) && pinnedSquads.get(squadId) === teamIndex;
+            const squadPinnedClass = isSquadPinned ? 'pinned' : '';
+            const genderClass = squad.gender === 'M' ? 'male' : 'female';
+            
+            teamsHtml += `
+                <div class="squad-item ${genderClass} ${squadPinnedClass}" id="squad-${teamIndex}-${squadIndex}">
+                    <strong>${squad.name}</strong> (${squad.gender}, ${squad.members})
+                    <em>da ${squad.group}</em>
+                    ${isSquadPinned ? '<span class="pin-indicator">📌</span>' : ''}
+                    <button class="${isSquadPinned ? 'unpin-action' : 'pin-action'}" 
+                            onclick="${isSquadPinned ? 'unpinSquad(\'' : 'pinSquad(\''}${squadId}\', ${teamIndex})">
+                        ${isSquadPinned ? 'Sblocca' : 'Blocca'}
+                    </button>
+                </div>
+            `;
+        });
+        
+        teamsHtml += `
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    teamsContainer.innerHTML = teamsHtml;
+    
+    // Mostra il container dei risultati
+    document.getElementById('resultsContainer').style.display = 'block';
+}
+
+// Funzione per bloccare un team
+function pinTeam(teamIndex) {
+    pinnedTeams.add(teamIndex);
+    
+    // Blocca anche tutte le squadriglie del team
+    formationTeams[teamIndex].squads.forEach(squad => {
+        const squadId = `${squad.group}-${squad.name}`;
+        pinnedSquads.set(squadId, teamIndex);
+    });
+    
+    displayResults();
+}
+
+// Funzione per sbloccare un team
+function unpinTeam(teamIndex) {
+    pinnedTeams.delete(teamIndex);
+    
+    // Sblocca anche tutte le squadriglie del team
+    formationTeams[teamIndex].squads.forEach(squad => {
+        const squadId = `${squad.group}-${squad.name}`;
+        pinnedSquads.delete(squadId);
+    });
+    
+    displayResults();
+}
+
+// Funzione per bloccare una squadriglia
+function pinSquad(squadId, teamIndex) {
+    pinnedSquads.set(squadId, teamIndex);
+    displayResults();
+}
+
+// Funzione per sbloccare una squadriglia
+function unpinSquad(squadId) {
+    pinnedSquads.delete(squadId);
+    displayResults();
+}
+
+// Funzione per scaricare i risultati
+function downloadResults() {
+    if (formationTeams.length === 0) {
+        showError("Nessun risultato da scaricare");
+        return;
+    }
+    
+    let content = "REPARTI DI FORMAZIONE\n\n";
+    
+    formationTeams.forEach(team => {
+        content += `${team.name}\n`;
+        content += `Squadriglie: ${team.squads.length} (${team.maleSquads} M, ${team.femaleSquads} F)\n`;
+        content += `Membri totali: ${team.totalMembers}\n\n`;
+        
+        content += "Squadriglie assegnate:\n";
+        team.squads.forEach(squad => {
+            content += `- ${squad.name} (${squad.gender}, ${squad.members}) da ${squad.group}\n`;
+        });
+        
+        content += "\n---\n\n";
+    });
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'reparti_formazione.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Funzione per mostrare errori
+function showError(message) {
+    const errorContainer = document.getElementById('errorContainer');
+    errorContainer.innerHTML = message;
+    errorContainer.style.display = 'block';
+}
+
+// Funzione per resettare i dati
+function resetData() {
+    scoutGroups = [];
+    formationTeams = [];
+    document.getElementById('errorContainer').style.display = 'none';
+}
+
+// Funzione per resettare l'applicazione
+function resetApp() {
+    resetData();
+    document.getElementById('dataContainer').style.display = 'none';
+    document.getElementById('resultsContainer').style.display = 'none';
+    document.getElementById('filePreview').innerHTML = '';
+    document.getElementById('fileContent').value = '';
+    pinnedTeams = new Set();
+    pinnedSquads = new Map();
+}
+    </script>
+</body>
+</html>
